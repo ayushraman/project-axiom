@@ -12,22 +12,19 @@ Axiom is a gamified, mobile-first micro-learning platform designed to bridge the
 
 ---
 
-##  Features
-*   **Cards**: Draggable scenario cards with dynamic **SAFE** / **UNSAFE** stamp overlays.
 =======
 ##  Features
-*   **Glassmorphic Smartphone Mockup**: Interactive, browser-based device frame simulating a real mobile application.
-*   **Tactile Tinder-Style Cards**: Draggable scenario cards with dynamic **SAFE** / **UNSAFE** stamp overlays.
-*   **Obsidian Cyber-Dark Theme**: Translucent cards, floating progress badges, and ambient glowing backdrops.
+*   **Cards**: Draggable scenario cards with dynamic **SAFE** / **UNSAFE** stamp overlays.
 *   **Zero Barriers**: Instant access through Guest Mode with no sign-ups or downloads required.
 
 ---
 
 ##  Technology Stack
 *   **Frontend**: React (UI components & state management)
-*   **Design System**: Material-UI / MUI (custom glassmorphic theme overrides)
 *   **Gestures & Physics**: Framer Motion (tactile card drags & active coordinate transforms)
 *   **Routing**: React Router DOM (fluid SPA page navigation)
+*   **Back-end**: Express.js, Node.js
+*   **AI**: Gemini API
 
 ---
 
