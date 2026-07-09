@@ -24,8 +24,6 @@ Axiom is a gamified, mobile-first micro-learning platform designed to bridge the
 ---
 
 ##  Technology Stack
-=======
-## 🛠️ Technology Stack
 *   **Frontend**: React (UI components & state management)
 *   **Design System**: Material-UI / MUI (custom glassmorphic theme overrides)
 *   **Gestures & Physics**: Framer Motion (tactile card drags & active coordinate transforms)
@@ -33,9 +31,8 @@ Axiom is a gamified, mobile-first micro-learning platform designed to bridge the
 
 ---
 
-##  Getting Started
-=======
-## 🚀 Getting Started
+
+## Getting Started
 
 ### Prerequisites
 Make sure you have Node.js installed on your machine.
