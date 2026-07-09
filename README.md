@@ -5,8 +5,6 @@ Axiom is a gamified, mobile-first micro-learning platform designed to bridge the
 ---
 
 ##  How It Works
-=======
-##  How It Works
 *   **Topic Selection**: Choose from curated decks (Digital Privacy 101, Basic Finance 101, Civic Rights 101).
 *   **Active Swiping**: Evaluate real-world scenarios in a simulated smartphone console (Swipe Right for **SAFE**, Swipe Left for **UNSAFE**).
 *   **Instant Feedback**: Read brief, high-retention explanations behind correct decisions immediately.
