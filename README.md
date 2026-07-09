@@ -1,5 +1,5 @@
 # Axiom — Life Skills Decoded
-
+# Deployed Link - https://project-axiom-ar.vercel.app/
 Axiom is a gamified, mobile-first micro-learning platform designed to bridge the practical life skills gap. Aligned with **UN Sustainable Development Goal 4 (Quality Education)**, it empowers users with crucial real-world knowledge (digital privacy, basic finance, civic rights) in under 2 minutes.
 
 ---
