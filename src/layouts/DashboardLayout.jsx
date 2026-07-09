@@ -10,7 +10,7 @@ export default function DashboardLayout() {
   const { currentIndex, deck, isCompleted } = useApp();
 
   const handleClose = () => {
-    navigate('/#decks');
+    navigate('/decks');
   };
 
   const getProgressText = () => {

@@ -1,0 +1,61 @@
+{
+  "users": [
+    {
+      "id": "1783616518553",
+      "username": "axiom_tester",
+      "password": "$2a$10$V4hI076CLdBqPKUrPju5GOeTUqYrgGLz2MLAjRrVWr4gjCxSQyEu.",
+      "streak": 0,
+      "lastActive": null
+    },
+    {
+      "id": "1783617800939",
+      "username": "axiom_testertest_user_1",
+      "password": "$2a$10$dkPx3tcvv1aCzRE6Jqjx4.6jhIVUeCxuh6NZEkJRahrVOAWUc4LqS",
+      "streak": 1,
+      "lastActive": "Thu Jul 09 2026"
+    },
+    {
+      "id": "1783618256005",
+      "username": "test_user_ai",
+      "password": "$2a$10$yETWWD9zApIfL6kRkkeQtuU8JZj.Y/BptbTCj0N/qP1Gt5N17xyk.",
+      "streak": 1,
+      "lastActive": "Thu Jul 09 2026"
+    },
+    {
+      "id": "1783619065453",
+      "username": "UserTest1",
+      "password": "$2a$10$iqFpz3.0zzTidq.cJ6P2EOv3I34LrtBQlFw2P.4pGNPMcZ23E48J2",
+      "streak": 1,
+      "lastActive": "Thu Jul 09 2026"
+    }
+  ],
+  "scores": [
+    {
+      "id": "1783618098568",
+      "username": "axiom_testertest_user_1",
+      "deckId": "privacy",
+      "score": 5,
+      "total": 5,
+      "percentage": 100,
+      "timestamp": "2026-07-09T17:28:18.569Z"
+    },
+    {
+      "id": "1783618782116",
+      "username": "test_user_ai",
+      "deckId": "ai_1783618580622",
+      "score": 5,
+      "total": 5,
+      "percentage": 100,
+      "timestamp": "2026-07-09T17:39:42.116Z"
+    },
+    {
+      "id": "1783619112825",
+      "username": "UserTest1",
+      "deckId": "ai_1783618580622",
+      "score": 4,
+      "total": 5,
+      "percentage": 80,
+      "timestamp": "2026-07-09T17:45:12.825Z"
+    }
+  ]
+}

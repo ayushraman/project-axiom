@@ -25,7 +25,7 @@ function App() {
             {/* Public Landing Routes */}
             <Route path="/" element={<LandingLayout />}>
               <Route index element={<LandingPage />} />
-              <Route path="decks" element={<Navigate to="/#decks" replace />} />
+              <Route path="decks" element={<DecksPage />} />
             </Route>
 
             {/* Standalone Auth Routes */}

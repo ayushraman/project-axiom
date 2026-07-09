@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Container, Typography, Grid, Card, CardContent, Button, Box, Avatar, useTheme } from '@mui/material';
+import { Container, Typography, Grid, Card, CardContent, Button, Box, Avatar, useTheme, TextField, CircularProgress } from '@mui/material';
 import ShieldIcon from '@mui/icons-material/Shield';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import GavelIcon from '@mui/icons-material/Gavel';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useApp, ALL_DECKS } from '../context/AppContext';
 
 const iconMap = {
@@ -15,16 +16,38 @@ const iconMap = {
   AccountBalance: AccountBalanceIcon,
   Gavel: GavelIcon,
   Favorite: FavoriteIcon,
+  AutoAwesome: AutoAwesomeIcon,
 };
 
 export default function DecksPage() {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { selectDeck } = useApp();
+  const { selectDeck, aiDecks, generateAiDeck } = useApp();
 
-  const handleStartDeck = (deckId) => {
-    selectDeck(deckId);
+  const [aiTopic, setAiTopic] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleStartDeck = (deckId, fallbackDeck = null) => {
+    selectDeck(deckId, fallbackDeck);
     navigate('/deck');
+  };
+
+  const handleGenerateAiDeck = async (e) => {
+    e.preventDefault();
+    if (!aiTopic.trim()) return;
+
+    setIsGenerating(true);
+    setError('');
+    try {
+      const generated = await generateAiDeck(aiTopic);
+      setAiTopic('');
+      handleStartDeck(generated.id, generated);
+    } catch (err) {
+      setError(err.message || 'Failed to generate custom AI deck. Make sure your server is running.');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -56,9 +79,81 @@ export default function DecksPage() {
           </motion.div>
         </Box>
 
+        {/* AI Deck Lab Panel */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <Card
+            sx={{
+              mb: 6,
+              p: 4,
+              background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.05) 0%, rgba(79, 70, 229, 0.05) 100%)',
+              backdropFilter: 'blur(10px)',
+              border: '1.5px solid',
+              borderColor: 'divider',
+              borderRadius: 4,
+              boxShadow: '0px 10px 30px rgba(79, 70, 229, 0.04)',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+              <AutoAwesomeIcon color="secondary" sx={{ fontSize: 28 }} />
+              <Typography variant="h5" sx={{ fontWeight: 800, fontFamily: '"Outfit", sans-serif' }}>
+                AI Deck Lab
+              </Typography>
+            </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: '650px', fontWeight: 500 }}>
+              Type any topic you want to master (e.g., "Personal Finance", "Social Media Phishing", "Job Interviews"). Gemini will instantly craft a custom swiping game deck for you.
+            </Typography>
+            <form onSubmit={handleGenerateAiDeck}>
+              <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
+                <TextField
+                  fullWidth
+                  placeholder="Enter a custom learning topic..."
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                  disabled={isGenerating}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 3,
+                      bgcolor: 'background.paper',
+                    }
+                  }}
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="secondary"
+                  disabled={isGenerating || !aiTopic.trim()}
+                  startIcon={isGenerating ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+                  sx={{
+                    px: 4,
+                    py: 1.5,
+                    borderRadius: 3,
+                    fontWeight: 700,
+                    whiteSpace: 'nowrap',
+                    boxShadow: '0px 8px 20px rgba(236, 72, 153, 0.15)',
+                    '&:hover': {
+                      boxShadow: '0px 12px 24px rgba(236, 72, 153, 0.25)',
+                    }
+                  }}
+                >
+                  {isGenerating ? 'Generating...' : 'Generate Deck'}
+                </Button>
+              </Box>
+            </form>
+            {error && (
+              <Typography color="error" variant="caption" sx={{ mt: 1.5, display: 'block', fontWeight: 600 }}>
+                {error}
+              </Typography>
+            )}
+          </Card>
+        </motion.div>
+
         {/* Decks Grid */}
         <Grid container spacing={3}>
-          {ALL_DECKS.map((deckItem, index) => {
+          {[...ALL_DECKS, ...aiDecks].map((deckItem, index) => {
             const IconComponent = iconMap[deckItem.icon] || ShieldIcon;
             return (
               <Grid size={{ xs: 12, sm: 6 }} key={deckItem.id}>

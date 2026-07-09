@@ -9,13 +9,15 @@ import {
   Container,
   Grid,
   Divider,
+  Chip,
+  Avatar,
 } from '@mui/material';
 import SchoolIcon from '@mui/icons-material/School';
 import { useApp } from '../context/AppContext';
 
 export default function LandingLayout() {
   const navigate = useNavigate();
-  const { initiateDemo } = useApp();
+  const { user, logout, initiateDemo } = useApp();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function LandingLayout() {
   };
 
   const handleTryDeck = () => {
-    handleScrollTo('decks');
+    navigate('/decks');
   };
 
   return (
@@ -81,12 +83,43 @@ export default function LandingLayout() {
 
             {/* Auth Buttons */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Button variant="outlined" color="primary" onClick={() => navigate('/login')} sx={{ borderRadius: 20, px: 3 }}>
-                Login
-              </Button>
-              <Button variant="contained" color="primary" onClick={handleTryDeck} sx={{ borderRadius: 20, px: 3 }}>
-                Try a Deck
-              </Button>
+              {user ? (
+                <>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Chip
+                      icon={<span>🔥</span>}
+                      label={`${user.streak || 0} Streak`}
+                      color="secondary"
+                      variant="outlined"
+                      sx={{
+                        fontWeight: 800,
+                        borderRadius: 20,
+                        borderColor: 'secondary.main',
+                        color: 'secondary.main',
+                        '& .MuiChip-icon': { fontSize: '1rem', marginLeft: '6px' }
+                      }}
+                    />
+                    <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main', fontSize: '0.85rem', fontWeight: 800 }}>
+                      {user.username.charAt(0).toUpperCase()}
+                    </Avatar>
+                    <Typography variant="body2" sx={{ fontWeight: 700, display: { xs: 'none', sm: 'block' } }}>
+                      {user.username}
+                    </Typography>
+                  </Box>
+                  <Button variant="text" color="inherit" onClick={logout} sx={{ borderRadius: 20, px: 2, fontWeight: 600 }}>
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="outlined" color="primary" onClick={() => navigate('/login')} sx={{ borderRadius: 20, px: 3 }}>
+                    Login
+                  </Button>
+                  <Button variant="contained" color="primary" onClick={handleTryDeck} sx={{ borderRadius: 20, px: 3 }}>
+                    Try a Deck
+                  </Button>
+                </>
+              )}
             </Box>
           </Toolbar>
         </Container>
@@ -139,7 +172,7 @@ export default function LandingLayout() {
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
 
             <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
-              Developed by Ayush Raman. WebD Final Project Lenovo
+              Developed by Ayush Raman.
             </Typography>
           </Box>
         </Container>

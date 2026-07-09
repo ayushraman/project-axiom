@@ -39,9 +39,10 @@ const AppleSvg = () => (
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { initiateDemo } = useApp();
+  const { initiateDemo, login, signup } = useApp();
   
-  const [email, setEmail] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -56,28 +57,33 @@ export default function LoginPage() {
 
   const handleGuestSignIn = () => {
     initiateDemo();
-    navigate('/deck');
+    navigate('/#decks');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!email || !password) {
+    if (!username || !password) {
       setError('Please fill in all fields.');
       return;
     }
 
-    // Basic email pattern validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address.');
+    if (username.length < 3) {
+      setError('Username must be at least 3 characters.');
       return;
     }
 
-    // Mock authenticate and redirect to learning canvas
-    initiateDemo();
-    navigate('/deck');
+    try {
+      if (isSignUp) {
+        await signup(username, password);
+      } else {
+        await login(username, password);
+      }
+      navigate('/');
+    } catch (err) {
+      setError(err.message || 'Authentication failed. Please try again.');
+    }
   };
 
   return (
@@ -151,7 +157,7 @@ export default function LoginPage() {
         <Card sx={{ boxShadow: '0px 16px 40px rgba(15, 23, 42, 0.05)', border: '1.5px solid', borderColor: 'divider' }}>
           <CardContent sx={{ p: 4 }}>
             <Typography variant="h5" sx={{ fontWeight: 800, mb: 3, fontFamily: '"Outfit", sans-serif', textAlign: 'center' }}>
-              Sign In
+              {isSignUp ? 'Create Account' : 'Sign In'}
             </Typography>
 
             {error && (
@@ -163,11 +169,11 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} noValidate>
               <TextField
                 fullWidth
-                label="Email Address"
+                label="Username"
                 variant="outlined"
                 margin="normal"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 3,
@@ -208,7 +214,7 @@ export default function LoginPage() {
                 size="large"
                 sx={{ py: 1.5, mb: 2, fontWeight: 700 }}
               >
-                Sign In
+                {isSignUp ? 'Register' : 'Sign In'}
               </Button>
             </form>
 
@@ -218,9 +224,22 @@ export default function LoginPage() {
               fullWidth
               size="large"
               onClick={handleGuestSignIn}
-              sx={{ py: 1.5, mb: 3, fontWeight: 700, borderWidth: '2px', '&:hover': { borderWidth: '2px' } }}
+              sx={{ py: 1.5, mb: 2, fontWeight: 700, borderWidth: '2px', '&:hover': { borderWidth: '2px' } }}
             >
               Sign In as Guest
+            </Button>
+
+            <Button
+              variant="text"
+              color="primary"
+              fullWidth
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setError('');
+              }}
+              sx={{ py: 1, mb: 3, fontWeight: 700, textTransform: 'none' }}
+            >
+              {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
             </Button>
 
             <Divider sx={{ mb: 3, color: 'text.disabled', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>

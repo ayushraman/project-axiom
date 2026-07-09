@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion';
-import { Box, Card, CardContent, Typography, Button, IconButton, Chip, Grid, Paper, Avatar } from '@mui/material';
+import { Box, Card, CardContent, Typography, Button, IconButton, Chip, Grid, Paper, Avatar, Divider, CircularProgress } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
 import ReplayIcon from '@mui/icons-material/Replay';
@@ -150,11 +150,34 @@ export default function DashboardPage() {
     resetDeck,
     isCompleted,
     score,
-    swipeHistory
+    swipeHistory,
+    activeDeckId
   } = useApp();
   
   const navigate = useNavigate();
   const [swipeTrigger, setSwipeTrigger] = useState(null);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+
+  // Fetch leaderboard when deck is completed
+  useEffect(() => {
+    if (isCompleted) {
+      setLoadingLeaderboard(true);
+      fetch('http://localhost:5000/api/leaderboard')
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to fetch leaderboard');
+          return res.json();
+        })
+        .then(data => {
+          setLeaderboard(data);
+          setLoadingLeaderboard(false);
+        })
+        .catch(err => {
+          console.error(err);
+          setLoadingLeaderboard(false);
+        });
+    }
+  }, [isCompleted]);
 
   // Shared parent motion value for color shifting
   const parentX = useMotionValue(0);
@@ -288,7 +311,7 @@ export default function DashboardPage() {
               </Box>
 
               {/* Controls */}
-              <Grid container spacing={2}>
+              <Grid container spacing={2} sx={{ mb: 2 }}>
                 <Grid size={{ xs: 6 }}>
                   <Button
                     variant="outlined"
@@ -309,13 +332,64 @@ export default function DashboardPage() {
                     fullWidth
                     size="large"
                     startIcon={<HomeIcon />}
-                    onClick={() => navigate('/#decks')}
+                    onClick={() => navigate('/')}
                     sx={{ py: 1.5 }}
                   >
                     All Decks
                   </Button>
                 </Grid>
               </Grid>
+
+              {/* Leaderboard Widget */}
+              <Divider sx={{ my: 3 }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 2, textAlign: 'left', display: 'flex', alignItems: 'center', gap: 1 }}>
+                🏆 Global Leaderboard (Top Scores)
+              </Typography>
+              {loadingLeaderboard ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                  <CircularProgress size={24} color="primary" />
+                </Box>
+              ) : leaderboard.length === 0 ? (
+                <Typography variant="body2" color="text.secondary" sx={{ py: 1, fontStyle: 'italic', textAlign: 'left' }}>
+                  No scores submitted yet. Complete this session to rank!
+                </Typography>
+              ) : (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, maxHeight: 200, overflowY: 'auto', pr: 0.5 }}>
+                  {leaderboard.map((entry, idx) => (
+                    <Box
+                      key={entry.id}
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        p: 1.2,
+                        borderRadius: 2,
+                        bgcolor: 'action.hover',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 800, color: 'primary.main', minWidth: 20 }}>
+                          #{idx + 1}
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                          {entry.username}
+                        </Typography>
+                        <Chip
+                          label={entry.deckId.replace('ai_', 'AI ').toUpperCase()}
+                          size="small"
+                          sx={{ height: 18, fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase' }}
+                        />
+                      </Box>
+                      <Typography variant="body2" sx={{ fontWeight: 800 }}>
+                        {entry.score}/{entry.total} ({entry.percentage}%)
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
             </CardContent>
           </Card>
         </motion.div>

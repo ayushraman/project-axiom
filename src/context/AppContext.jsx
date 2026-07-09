@@ -218,16 +218,26 @@ export const ALL_DECKS = [
 ];
 
 export function AppProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const API_URL = 'http://localhost:5000/api';
+
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('axiom_user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [token, setToken] = useState(() => localStorage.getItem('axiom_token') || null);
   const [deck, setDeck] = useState([]);
   const [activeDeckId, setActiveDeckId] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeHistory, setSwipeHistory] = useState([]);
   const [score, setScore] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [aiDecks, setAiDecks] = useState(() => {
+    const savedAi = localStorage.getItem('axiom_ai_decks');
+    return savedAi ? JSON.parse(savedAi) : [];
+  });
 
   const initiateDemo = () => {
-    setUser({ name: 'Guest User', isDemo: true });
+    setUser({ username: 'Guest User', isDemo: true, streak: 0 });
     setDeck(MOCK_PRIVACY_DECK);
     setActiveDeckId('privacy');
     setCurrentIndex(0);
@@ -236,10 +246,49 @@ export function AppProvider({ children }) {
     setIsCompleted(false);
   };
 
-  const selectDeck = (deckId) => {
-    const selected = ALL_DECKS.find(d => d.id === deckId);
+  const login = async (username, password) => {
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to login');
+
+    setToken(data.token);
+    setUser(data.user);
+    localStorage.setItem('axiom_token', data.token);
+    localStorage.setItem('axiom_user', JSON.stringify(data.user));
+    return data.user;
+  };
+
+  const signup = async (username, password) => {
+    const res = await fetch(`${API_URL}/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to signup');
+
+    setToken(data.token);
+    setUser(data.user);
+    localStorage.setItem('axiom_token', data.token);
+    localStorage.setItem('axiom_user', JSON.stringify(data.user));
+    return data.user;
+  };
+
+  const logout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('axiom_token');
+    localStorage.removeItem('axiom_user');
+  };
+
+  const selectDeck = (deckId, fallbackDeck = null) => {
+    const selected = fallbackDeck || [...ALL_DECKS, ...aiDecks].find(d => d.id === deckId);
     if (selected) {
-      setUser(prev => prev || { name: 'Guest User', isDemo: true });
+      setUser(prev => prev || { username: 'Guest User', isDemo: true, streak: 0 });
       setDeck(selected.cards);
       setActiveDeckId(deckId);
       setCurrentIndex(0);
@@ -256,11 +305,58 @@ export function AppProvider({ children }) {
     setIsCompleted(false);
   };
 
+  const submitScore = async (deckId, finalScore, totalCards) => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/scores`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ deckId, score: finalScore, total: totalCards })
+      });
+      const data = await res.json();
+      if (res.ok && data.user) {
+        setUser(data.user);
+        localStorage.setItem('axiom_user', JSON.stringify(data.user));
+      }
+    } catch (err) {
+      console.error('Failed to submit score', err);
+    }
+  };
+
+  const generateAiDeck = async (topic) => {
+    const res = await fetch(`${API_URL}/ai/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic })
+    });
+    const cards = await res.json();
+    if (!res.ok) throw new Error(cards.error || 'Failed to generate AI deck');
+
+    const newDeckId = `ai_${Date.now()}`;
+    const newDeck = {
+      id: newDeckId,
+      title: `${topic.charAt(0).toUpperCase() + topic.slice(1)} (AI)`,
+      topic: topic,
+      icon: 'AutoAwesome',
+      color: '#EC4899',
+      bgLight: 'rgba(236, 72, 153, 0.06)',
+      description: `Custom dynamically generated scenarios about ${topic}.`,
+      cards: cards.map((c, idx) => ({ ...c, id: `${newDeckId}_${idx}` }))
+    };
+
+    const updatedAiDecks = [newDeck, ...aiDecks];
+    setAiDecks(updatedAiDecks);
+    localStorage.setItem('axiom_ai_decks', JSON.stringify(updatedAiDecks));
+    return newDeck;
+  };
+
   const swipeCard = (swipedSafe) => {
     if (currentIndex >= deck.length) return;
 
     const currentCard = deck[currentIndex];
-    // Choice is correct if swiped direction matches the true safety status
     const isCorrect = swipedSafe === currentCard.isSafe;
     const newHistory = [...swipeHistory, { cardId: currentCard.id, choice: swipedSafe, isCorrect }];
     setSwipeHistory(newHistory);
@@ -271,6 +367,7 @@ export function AppProvider({ children }) {
     const nextIndex = currentIndex + 1;
     if (nextIndex >= deck.length) {
       setIsCompleted(true);
+      submitScore(activeDeckId, newScore, deck.length);
     } else {
       setCurrentIndex(nextIndex);
     }
@@ -280,16 +377,22 @@ export function AppProvider({ children }) {
     <AppContext.Provider
       value={{
         user,
+        token,
         deck,
         activeDeckId,
         currentIndex,
         swipeHistory,
         score,
         isCompleted,
+        aiDecks,
         initiateDemo,
+        login,
+        signup,
+        logout,
         selectDeck,
         resetDeck,
-        swipeCard
+        swipeCard,
+        generateAiDeck
       }}
     >
       {children}
